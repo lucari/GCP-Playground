@@ -18,8 +18,8 @@ gcloud beta container clusters create "my-cluster" \
 --enable-cloud-logging \
 --enable-cloud-monitoring \
 --enable-ip-alias \
---network "projects/my-project/global/networks/my-vpc-1" \
---subnetwork "projects/my-project/regions/us-central1/subnetworks/subnet-a" \
+--network "projects/${GOOGLE_CLOUD_PROJECT}/global/networks/my-vpc-1" \
+--subnetwork "projects/${GOOGLE_CLOUD_PROJECT}/regions/us-central1/subnetworks/subnet-a" \
 --default-max-pods-per-node "110" \
 --addons HorizontalPodAutoscaling,HttpLoadBalancing \
 --enable-autoupgrade \
