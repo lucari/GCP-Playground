@@ -1,6 +1,6 @@
 
 #Basic Kubernetes Cluster Creation
-gcloud beta container --project "my-project" clusters create "my-cluster" \
+gcloud beta container clusters create "my-cluster" \
 --zone "us-central1-a" \
 --no-enable-basic-auth \
 --cluster-version "1.13.11-gke.14" \
@@ -26,7 +26,7 @@ gcloud beta container --project "my-project" clusters create "my-cluster" \
 --enable-autorepair
 
 Allow Authentication (may not be needed if command line build)
-gcloud container --project my-project clusters get-credentials my-cluster \
+gcloud container clusters get-credentials my-cluster \
 --zone=us-central1-a
 
 
@@ -84,7 +84,7 @@ requirements.txt
 # This file defines the image's dependencies
 flask>=0.12.3
 
-$ docker build -t gcr.io/my-project/hello-richy:v1 .
+$ docker build -t gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v1 .
 
 $ docker images
 REPOSITORY                                  TAG                 IMAGE ID            CREATED             SIZE
@@ -92,9 +92,9 @@ gcr.io/playground-s-11-1f519b/hello-richy   v1                  b7810c153dfd    
 python                                      3.7-slim            5b03cb8574a0        2 weeks ago         179MB
 
 $ gcloud auth configure-docker
-$ docker push gcr.io/my-project/hello-richy:v1
+$ docker push gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v1
 
-$ kubectl run hello-richy --image=gcr.io/playground-s-11-1f519b/hello-richy:v1 --port 80
+$ kubectl run hello-richy --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v1 --port 80
 
 $ kubectl get pods
 NAME                           READY   STATUS    RESTARTS   AGE
@@ -141,7 +141,7 @@ $ docker build -t gcr.io/my-project/hello-richy:v2 .
 
 $ docker push gcr.io/my-project/hello-richy:v2
 
-$ kubectl set image deployment/hello-richy hello-richy=gcr.io/my-project/hello-richy:v2
+$ kubectl set image deployment/hello-richy hello-richy=gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v2
 
 $ kubectl get deployments -o wide
 NAME          READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS    IMAGES                                         SELECTOR
