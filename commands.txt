@@ -1,0 +1,212 @@
+Creating new VPCs and Subnets
+gcloud compute --project=my-project networks create my-vpc-1 \
+--subnet-mode=custom
+
+gcloud compute --project=my-project networks subnets create subnet-a \
+--network=my-vpc-1 \
+--region=us-central1 \
+--range=10.10.0.0/16
+
+gcloud compute --project=my-project networks subnets create subnet-b \
+--network=my-vpc-1 \
+--region=us-east1 \
+--range=10.20.0.0/16
+
+gcloud compute --project=my-project networks create my-vpc-2 \
+--subnet-mode=custom
+
+gcloud compute --project=my-project networks subnets create subnet-c \
+--network=my-vpc-2 \
+--region=us-central1 \
+--range=10.110.0.0/16
+
+gcloud compute --project=my-project networks subnets create subnet-d \
+--network=my-vpc-2 \
+--region=us-east1 \
+--range=10.120.0.0/16
+
+Create the basic firewall rules
+gcloud compute --project=my-project firewall-rules create vpc1-allow-icmp \
+--description="Allows ICMP from any src to any instance on the network." \
+--direction=INGRESS \
+--priority=65534 \
+--network=vpc1 \
+--action=ALLOW \
+--rules=icmp \
+--source-ranges=0.0.0.0/0
+
+gcloud compute --project=my-project firewall-rules create vpc1-allow-internal \
+--description="Any source in the network IP range to any all protocols." \
+--direction=INGRESS \
+--priority=65534 \
+--network=vpc1 \
+--action=ALLOW \
+--rules=all \
+--source-ranges=10.128.0.0/9
+
+gcloud compute --project=my-project firewall-rules create vpc1-allow-rdp \
+--description="RDP from any source to any instance on network port 3389." \
+--direction=INGRESS \
+--priority=65534 \
+--network=vpc1 \
+--action=ALLOW \
+--rules=tcp:3389 \
+--source-ranges=0.0.0.0/0
+
+gcloud compute --project=my-project firewall-rules create vpc1-allow-ssh \
+--description="SSH from any source to any instance on network port 22." \
+--direction=INGRESS \
+--priority=65534 \
+--network=vpc1 \
+--action=ALLOW \
+--rules=tcp:22 \
+--source-ranges=0.0.0.0/0
+Basic Kubernetes Cluster Creation
+gcloud beta container --project "my-project" clusters create "my-cluster" \
+--zone "us-central1-a" \
+--no-enable-basic-auth \
+--cluster-version "1.13.11-gke.14" \
+--machine-type "n1-standard-1" \
+--image-type "COS" \
+--disk-type "pd-standard" \
+--disk-size "100" \
+--scopes "https://www.googleapis.com/auth/devstorage.read_only",\
+  "https://www.googleapis.com/auth/logging.write",\
+  "https://www.googleapis.com/auth/monitoring",\
+  "https://www.googleapis.com/auth/servicecontrol",\
+  "https://www.googleapis.com/auth/service.management.readonly",\
+  "https://www.googleapis.com/auth/trace.append" \
+--num-nodes "3" \
+--enable-cloud-logging \
+--enable-cloud-monitoring \
+--enable-ip-alias \
+--network "projects/my-project/global/networks/my-vpc-1" \
+--subnetwork "projects/my-project/regions/us-central1/subnetworks/subnet-a" \
+--default-max-pods-per-node "110" \
+--addons HorizontalPodAutoscaling,HttpLoadBalancing \
+--enable-autoupgrade \
+--enable-autorepair
+
+Allow Authentication (may not be needed if command line build)
+gcloud container --project my-project clusters get-credentials my-cluster \
+--zone=us-central1-a
+
+
+Check
+$ kubectl get nodes
+NAME                                        STATUS   ROLES    AGE   VERSION
+gke-my-cluster-default-pool-a7aaa5b4-3gxs   Ready    <none>   76m   v1.13.11-gke.14
+gke-my-cluster-default-pool-a7aaa5b4-nqrw   Ready    <none>   76m   v1.13.11-gke.14
+gke-my-cluster-default-pool-a7aaa5b4-qz3w   Ready    <none>   76m   v1.13.11-gke.14
+
+Kubernetes Test
+1.	Build a simple cluster
+2.	Pull a simple Go application & Docker files from GIT (like the samples)
+3.	Create the image
+4.	Push into Registry
+5.	Deploy to cluster
+6.	Add service with load balancer
+7.	Setup autoscale
+8.	Run with Apache load testing
+ 
+
+app.py
+# The Docker image contains the following code
+from flask import Flask
+import os
+import socket
+
+app = Flask(__name__)
+
+@app.route("/")
+def sayHello():
+    html = "<div style='text-align:center;margin:20px;'><h1>Greetings from Richy</h1>This is a simple test page</div>"
+    return html
+
+if __name__ == "__main__":
+  app.run(host='0.0.0.0', port=80)
+
+dockerfile
+# The Dockerfile defines the image's environment
+# Import Python runtime and set up working directory
+FROM python:3.7-slim
+WORKDIR /app
+ADD . /app
+
+# Install any necessary dependencies
+RUN pip install -r requirements.txt
+
+# Open port 80 for serving the webpage
+EXPOSE 80
+
+# Run app.py when the container launches
+CMD ["python", "app.py"]
+
+requirements.txt
+# This file defines the image's dependencies
+flask>=0.12.3
+
+$ docker build -t gcr.io/my-project/hello-richy:v1 .
+
+$ docker images
+REPOSITORY                                  TAG                 IMAGE ID            CREATED             SIZE
+gcr.io/playground-s-11-1f519b/hello-richy   v1                  b7810c153dfd        22 seconds ago      188MB
+python                                      3.7-slim            5b03cb8574a0        2 weeks ago         179MB
+
+$ gcloud auth configure-docker
+$ docker push gcr.io/my-project/hello-richy:v1
+
+$ kubectl run hello-richy --image=gcr.io/playground-s-11-1f519b/hello-richy:v1 --port 80
+
+$ kubectl get pods
+NAME                           READY   STATUS    RESTARTS   AGE
+hello-richy-85bb8d67c4-7l7zj   1/1     Running   0          40s
+
+$ kubectl expose deployment hello-richy --type LoadBalancer --port 80 --target-port 80
+
+$ kubectl get services
+NAME          TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)        AGE
+hello-richy   LoadBalancer   10.230.3.84   34.67.237.66   80:30851/TCP   68s
+kubernetes    ClusterIP      10.230.0.1    <none>         443/TCP        102m
+
+$ kubectl scale deployment hello-richy --replicas=3
+
+$ kubectl get pods
+NAME                           READY   STATUS    RESTARTS   AGE
+hello-richy-85bb8d67c4-656cm   1/1     Running   0          12s
+hello-richy-85bb8d67c4-7l7zj   1/1     Running   0          4m31s
+hello-richy-85bb8d67c4-vgfwn   1/1     Running   0          12s
+
+$ kubectl autoscale deployment hello-richy --max 6 --min 4 --cpu-percent 50
+
+$ kubectl get pods
+NAME                           READY   STATUS    RESTARTS   AGE
+hello-richy-85bb8d67c4-656cm   1/1     Running   0          105s
+hello-richy-85bb8d67c4-7l7zj   1/1     Running   0          6m4s
+hello-richy-85bb8d67c4-tsm5f   1/1     Running   0          2s
+hello-richy-85bb8d67c4-vgfwn   1/1     Running   0          105s
+
+$ gcloud container clusters resize my-cluster --num-nodes 4 --zone us-central1-a
+
+$ kubectl get nodes
+NAME                                        STATUS   ROLES    AGE    VERSION
+gke-my-cluster-default-pool-a7aaa5b4-3gxs   Ready    <none>   108m   v1.13.11-gke.14
+gke-my-cluster-default-pool-a7aaa5b4-nqrw   Ready    <none>   108m   v1.13.11-gke.14
+gke-my-cluster-default-pool-a7aaa5b4-qz3w   Ready    <none>   108m   v1.13.11-gke.14
+gke-my-cluster-default-pool-a7aaa5b4-wh6z   Ready    <none>   70s    v1.13.11-gke.14
+
+$ gcloud container clusters update my-cluster \
+--enable-autoscaling --min-nodes=2 --max-nodes=8 --zone=us-central1-a
+
+*** Modify File ***
+$ docker build -t gcr.io/my-project/hello-richy:v2 .
+
+$ docker push gcr.io/my-project/hello-richy:v2
+
+$ kubectl set image deployment/hello-richy hello-richy=gcr.io/my-project/hello-richy:v2
+
+$ kubectl get deployments -o wide
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS    IMAGES                                         SELECTOR
+hello-richy   4/4     4            4           22m   hello-richy   gcr.io/my-project/hello-richy:v2   run=hello-richy
+
+
