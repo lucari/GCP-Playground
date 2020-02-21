@@ -1,0 +1,15 @@
+# Apache Bench Notes
+
+1. Create a simple Compute Engine (minimal size)
+
+2. Install Apache Bench
+    $ sudo apt install apache2-utils
+
+3. Run to test
+    $ ab -n 100000 -c 20 http://<External-IP-Address>/
+    
+    where:
+        -n is number of requests
+        -c concurent requests
+        
+
