@@ -1,5 +1,8 @@
 
 #Basic Kubernetes Cluster Creation
+
+# Note - Need to enable GKE and Cloud Registry APIs before running this. Access via console starts this...
+
 gcloud beta container clusters create "my-cluster" \
 --zone "us-central1-a" \
 --no-enable-basic-auth \
