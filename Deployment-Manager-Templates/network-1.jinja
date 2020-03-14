@@ -3,7 +3,7 @@ resources:
   type: compute.v1.network
   properties:
     autoCreateSubnetworks: false
-    
+
 - name: subnet-a
   type: compute.v1.subnetwork
   properties:
@@ -11,7 +11,7 @@ resources:
     network: $(ref.my-vpc-1.selfLink)
     privateIpGoogleAccess: false
     region: us-central1
-    
+
 - name: subnet-b
   type: compute.v1.subnetwork
   properties:
@@ -19,14 +19,15 @@ resources:
     network: $(ref.my-vpc-1.selfLink)
     privateIpGoogleAccess: false
     region: us-east1
-    
+
 - name: vpc1-allow-icmp
   type: compute.v1.firewall
   properties:
     network: $(ref.my-vpc-1.selfLink)
     sourceRanges: ["0.0.0.0/0"]
+    allowed:
       - IPProtocol: ICMP
-      
+
 - name: vpc1-allow-ssh
   type: compute.v1.firewall
   properties:
@@ -35,7 +36,7 @@ resources:
     allowed:
       - IPProtocol: TCP
         ports: ["22"]
-        
+
 - name: vpc1-allow-http
   type: compute.v1.firewall
   properties:
