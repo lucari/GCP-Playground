@@ -8,7 +8,7 @@ resources:
   type: compute.v1.subnetwork
   properties:
     ipCidrRange: 10.110.0.0/16
-    network: $(ref.network-2.selfLink)
+    network: $(ref.my-vpc-2.selfLink)
     privateIpGoogleAccess: false
     region: us-central1
 
@@ -16,21 +16,22 @@ resources:
   type: compute.v1.subnetwork
   properties:
     ipCidrRange: 10.120.0.0/16
-    network: $(ref.network-2.selfLink)
+    network: $(ref.my-vpc-2.selfLink)
     privateIpGoogleAccess: false
     region: us-east1
 
 - name: vpc2-allow-icmp
   type: compute.v1.firewall
   properties:
-    network: $(ref.network-2.selfLink)
+    network: $(ref.my-vpc-2.selfLink)
     sourceRanges: ["0.0.0.0/0"]
+    allowed:
       - IPProtocol: ICMP
 
 - name: vpc2-allow-ssh
   type: compute.v1.firewall
   properties:
-    network: $(ref.network-2.selfLink)
+    network: $(ref.my-vpc-2.selfLink)
     sourceRanges: ["0.0.0.0/0"]
     allowed:
       - IPProtocol: TCP
@@ -39,7 +40,7 @@ resources:
 - name: vpc2-allow-http
   type: compute.v1.firewall
   properties:
-    network: $(ref.network-2.selfLink)
+    network: $(ref.my-vpc-2.selfLink)
     targetTags: ["http-server"]
     sourceRanges: ["0.0.0.0/0"]
     allowed:
