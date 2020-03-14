@@ -28,14 +28,19 @@ resources:
     allowed:
       - IPProtocol: ICMP
 
-- name: vpc1-allow-ssh
+# Show the many ways to define multiple ports
+- name: vpc1-allow-many
   type: compute.v1.firewall
   properties:
     network: $(ref.my-vpc-1.selfLink)
     sourceRanges: ["0.0.0.0/0"]
     allowed:
       - IPProtocol: TCP
+        ports: ["122", "123"]
+      - IPProtocol: TCP
         ports: ["22"]
+      - IPProtocol: UDP
+        ports: ["123"]
 
 - name: vpc1-allow-http
   type: compute.v1.firewall
