@@ -32,8 +32,13 @@ resources:
 - name: vpc1-allow-many
   type: compute.v1.firewall
   properties:
+    description: "Rule to allow mutiple protocols and ports"
     network: $(ref.my-vpc-1.selfLink)
     sourceRanges: ["0.0.0.0/0"]
+    priority: 2000
+    direction: INGRESS
+    disabled: false
+    enableLogging: false
     allowed:
       - IPProtocol: TCP
         ports: ["122", "123"]
