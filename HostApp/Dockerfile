@@ -5,4 +5,4 @@ RUN go install hello-actm
 FROM alpine:latest
 COPY --from=0 /go/bin/hello-actm .
 ENV PORT 8080
-CMD ["./hello-acmtm"]
+CMD ["./hello-actm"]
