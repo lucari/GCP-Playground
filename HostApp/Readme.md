@@ -1,2 +1,6 @@
 # HostApp
-**Simple web application written in Go that shows a welcome message, version and hostname**
+**Simple web application**
+
+This is a simple container web application written in Go. 
+
+It shows a welcome message, version number and hostname.
