@@ -1,0 +1,99 @@
+Steps to build the host sample application (based on GCP Tutorial)
+==================================================================
+
+First of all, run the Cloud Shell and activate all APIs by loading console pages
+
+
+1. Build the container image
+----------------------------
+git clone https://github.com/lucari/GCP-Playground.git
+
+cd GCP-Playground/HostApp
+
+export PROJECT_ID=[Project-ID]
+
+docker build -t gcr.io/${PROJECT_ID}/hello-actm:v1 .
+
+docker images
+
+
+2. Upload the container image
+-----------------------------
+gcloud auth configure-docker
+
+docker push gcr.io/${PROJECT_ID}/hello-actm:v1
+
+
+3. Run the container locally (optional)
+---------------------------------------
+docker run --rm -p 8080:8080 gcr.io/${PROJECT_ID}/hello-app:v1
+
+
+4. Create a container cluster
+-----------------------------
+gcloud config set project $PROJECT_ID
+
+gcloud config set compute/zone us-central1-a
+
+gcloud container clusters create actm-cluster --num-nodes=2
+
+gcloud compute instances list
+
+gcloud container clusters get-credentials actm-cluster (if created through console)
+
+
+5. Deploy application
+---------------------
+kubectl create deployment hello-actm-web --image=gcr.io/${PROJECT_ID}/hello-actm:v1
+
+kubectl get pods
+
+
+6. Expose the application
+-------------------------
+kubectl expose deployment hello-actm-web --type=LoadBalancer --port 80 --target-port 8080
+
+kubectl get service
+
+** Wait for external IP address to be available and load balancer settled **
+
+** Browse to application **
+
+
+7. Scale the application
+------------------------
+kubectl scale deployment hello-actm-web --replicas=2
+
+kubectl get deployment hello-actm-web
+
+kubectl get pods -o wide
+
+
+8. Deploy new version
+---------------------
+** Modify the code to new version
+
+docker build -t gcr.io/${PROJECT_ID}/hello-actm:v2 .
+
+docker push gcr.io/${PROJECT_ID}/hello-actm:v2
+
+kubectl set image deployment/hello-actm-web hello-actm=gcr.io/${PROJECT_ID}/hello-actm:v2
+
+kubectl get pods -o wide
+
+** Wait for updates to deploy **
+
+** Browse to application **
+
+
+9. Setup autoscaling
+--------------------
+kubectl autoscale deployment hello-actm-web --max 6 --min 2 --cpu-percent 50
+
+** Use AB to load application and scale up **
+
+
+
+
+
+
