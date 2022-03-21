@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-richy
+  labels:
+    app: hello-richy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-richy
+  template:
+    metadata:
+      labels:
+        app: hello-richy
+    spec:
+      containers:
+      - image: gcr.io/playground-s-11-ea3d599e/hello-richy:v1
+        name: hello-richy
+        ports:
+        - containerPort: 80
+        
+
