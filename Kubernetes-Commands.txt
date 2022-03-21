@@ -89,11 +89,15 @@ python                                      3.7-slim            5b03cb8574a0    
 $ gcloud auth configure-docker
 $ docker push gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v1
 
-$ kubectl run hello-richy --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v1 --port 80
+[old - $ kubectl run hello-richy --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-richy:v1 --port 80]
+
+# Use a deployment file as its easier (and the next bit doesn't work with the above)
+$ kubectl apply -f hello-richy-deploy.yaml
 
 $ kubectl get pods
 NAME                           READY   STATUS    RESTARTS   AGE
-hello-richy-85bb8d67c4-7l7zj   1/1     Running   0          40s
+hello-richy-69f4498fb6-5h978   1/1     Running   0          27s
+hello-richy-69f4498fb6-htph5   1/1     Running   0          27s
 
 $ kubectl expose deployment hello-richy --type LoadBalancer --port 80 --target-port 80
 
@@ -106,9 +110,9 @@ $ kubectl scale deployment hello-richy --replicas=3
 
 $ kubectl get pods
 NAME                           READY   STATUS    RESTARTS   AGE
-hello-richy-85bb8d67c4-656cm   1/1     Running   0          12s
-hello-richy-85bb8d67c4-7l7zj   1/1     Running   0          4m31s
-hello-richy-85bb8d67c4-vgfwn   1/1     Running   0          12s
+hello-richy-69f4498fb6-5h978   1/1     Running   0          10m
+hello-richy-69f4498fb6-htph5   1/1     Running   0          10m
+hello-richy-69f4498fb6-p7bvb   1/1     Running   0          36s
 
 $ kubectl autoscale deployment hello-richy --max 6 --min 4 --cpu-percent 50
 
